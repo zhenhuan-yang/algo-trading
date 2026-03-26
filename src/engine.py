@@ -3,12 +3,12 @@ from typing import List, Optional
 
 import pandas as pd
 
-from quant_trading.universe.base import IUniverse
-from quant_trading.data.base import IBarDataHandler
-from quant_trading.factor.base import IFactor
-from quant_trading.strategy.base import IStrategy
-from quant_trading.portfolio.base import IPortfolioManager
-from quant_trading.broker.base import IBroker
+from algo_trading.universe.base import IUniverse
+from algo_trading.data.base import IBarDataHandler
+from algo_trading.factor.base import IFactor
+from algo_trading.strategy.base import IStrategy
+from algo_trading.portfolio.base import IPortfolioManager
+from algo_trading.broker.base import IBroker
 
 
 class Engine:
@@ -97,17 +97,12 @@ class Engine:
 
 if __name__ == "__main__":
     import os
-    from quant_trading.universe.static import StaticUniverse
-    from quant_trading.data.alpaca import AlpacaBarDataHandler
-    from quant_trading.factor.multi_period_heima import MultiPeriodHeima
-    from quant_trading.factor.cci import CCI
-    from quant_trading.factor.trough import TroughDetector
-    from quant_trading.factor.zigzag import ZigZagReversal
-    from quant_trading.factor.phantom_blue import PhantomBlue
-    from quant_trading.factor.kdj import KDJ
-    from quant_trading.strategy.multi_period_resonance import MultiPeriodResonance
-    from quant_trading.portfolio.simple import SimplePortfolioManager
-    from quant_trading.broker.alpaca import AlpacaBroker
+    from algo_trading.universe.static import StaticUniverse
+    from algo_trading.data.alpaca import AlpacaBarDataHandler
+    from algo_trading.factor.cci import CCI
+    from algo_trading.strategy.base import IStrategy
+    from algo_trading.portfolio.simple import SimplePortfolioManager
+    from algo_trading.broker.alpaca import AlpacaBroker
 
     # 中概股 (匹配 archive/strategies/polygon_ticker_fetcher.py)
     CHINESE_STOCKS = sorted(set([
@@ -131,8 +126,7 @@ if __name__ == "__main__":
         universe=StaticUniverse(CHINESE_STOCKS),
         data_handler=AlpacaBarDataHandler(),
         factors=[
-            MultiPeriodHeima(),
-            CCI(14), TroughDetector(), ZigZagReversal(), PhantomBlue(), KDJ(n=9),
+            CCI(14),
         ],
         strategy=MultiPeriodResonance(),
         portfolio=SimplePortfolioManager(),

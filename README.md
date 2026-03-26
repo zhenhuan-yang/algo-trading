@@ -13,7 +13,7 @@ Universe → Data → Factor → Strategy → Portfolio → Broker
 | **Universe** | 标的池 | `StaticUniverse`, `AlpacaUniverse` |
 | **Data** | K线数据 | `AlpacaBarDataHandler` |
 | **Factor** | 因子计算 (纯 transform) |`CCI` |
-| **Strategy** | 信号条件 (stateless, 不跟踪 position) | `` |
+| **Strategy** | 信号条件 (stateless, 不跟踪 position) | `IStrategy` |
 | **Portfolio** | 订单生成 (position-aware) | `SimplePortfolioManager` |
 | **Broker** | 订单执行 + 持仓查询 | `AlpacaBroker` (paper trading) |
 | **Engine** | Pipeline 编排 (通用) | `Engine` |
@@ -52,8 +52,8 @@ src/algo_trading/
 ├── engine.py        # Pipeline 编排器 (通用)
 ├── common/          # enums, datatypes (Order, Fill, Position)
 ├── data/            # IBarDataHandler, AlpacaBarDataHandler
-├── factor/          # IFactor, MultiPeriodHeima, CCI, TroughDetector, ZigZagReversal, PhantomBlue, MoneyFlow, KDJ
-├── strategy/        # IStrategy, MultiPeriodResonance
+├── factor/          # IFactor, CCI
+├── strategy/        # IStrategy
 ├── universe/        # IUniverse, StaticUniverse, AlpacaUniverse
 ├── portfolio/       # IPortfolioManager, SimplePortfolioManager
 └── broker/          # IBroker, AlpacaBroker
