@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict
 
-from algo_trading.common.datatypes import Order, Fill, Position
+from quant_trading.common.datatypes import Order, Fill, Position, Account
 
 
 class IBroker(ABC):
@@ -18,6 +18,6 @@ class IBroker(ABC):
         pass
 
     @abstractmethod
-    def get_account_value(self) -> float:
-        """获取账户总价值"""
+    def get_account(self) -> Account:
+        """获取账户信息"""
         pass

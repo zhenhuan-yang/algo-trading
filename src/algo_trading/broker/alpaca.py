@@ -8,11 +8,9 @@ load_dotenv()
 
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
-from alpaca.trading.enums import OrderSide, TimeInForce
-
-from algo_trading.broker.base import IBroker
-from algo_trading.common.datatypes import Order, Fill, Position
-from algo_trading.common.enums import Side
+from quant_trading.broker.base import IBroker
+from quant_trading.common.datatypes import Order, Fill, Position, Account
+from quant_trading.common.enums import Side
 
 
 class AlpacaBroker(IBroker):
@@ -36,28 +34,18 @@ class AlpacaBroker(IBroker):
     def submit_orders(self, orders: List[Order]) -> List[Fill]:
         fills = []
         for order in orders:
-            side = OrderSide.BUY if order.side == Side.BUY else OrderSide.SELL
-
-            if order.qty == 0 and order.side == Side.BUY:
-                # 全仓买入：用 notional (金额) 下单
-                account = self._client.get_account()
-                cash = float(account.cash)
-                req = MarketOrderRequest(
-                    symbol=order.symbol,
-                    notional=cash,
-                    side=side,
-                    time_in_force=TimeInForce.DAY,
-                )
-            else:
-                req = MarketOrderRequest(
-                    symbol=order.symbol,
-                    qty=order.qty,
-                    side=side,
-                    time_in_force=TimeInForce.DAY,
-                )
+            # notional 和 qty 二选一，由 Order.__post_init__ 保证至少有一个
+            sizing = {"notional": order.notional} if order.notional else {"qty": order.qty}
+            req = MarketOrderRequest(
+                symbol=order.symbol,
+                side=order.side.value,
+                time_in_force=order.time_in_force.value,
+                **sizing,
+            )
 
             result = self._client.submit_order(req)
             fills.append(Fill(
+                order_id=str(result.id),
                 symbol=result.symbol,
                 side=order.side,
                 qty=float(result.qty or result.notional or 0),
@@ -74,11 +62,15 @@ class AlpacaBroker(IBroker):
                 symbol=p.symbol,
                 qty=float(p.qty),
                 avg_price=float(p.avg_entry_price),
-                market_value=float(p.market_value),
+                current_price=float(p.current_price),
             )
             for p in raw
         }
 
-    def get_account_value(self) -> float:
-        account = self._client.get_account()
-        return float(account.portfolio_value)
+    def get_account(self) -> Account:
+        raw = self._client.get_account()
+        return Account(
+            cash=float(raw.cash),
+            buying_power=float(raw.buying_power),
+            portfolio_value=float(raw.portfolio_value),
+        )

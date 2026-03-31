@@ -1,14 +1,17 @@
+import logging
 from datetime import datetime, timedelta
 from typing import List, Optional
 
 import pandas as pd
 
-from algo_trading.universe.base import IUniverse
-from algo_trading.data.base import IBarDataHandler
-from algo_trading.factor.base import IFactor
-from algo_trading.strategy.base import IStrategy
-from algo_trading.portfolio.base import IPortfolioManager
-from algo_trading.broker.base import IBroker
+from quant_trading.universe.base import IUniverse
+from quant_trading.data.base import IBarDataHandler
+from quant_trading.factor.base import IFactor
+from quant_trading.strategy.base import IStrategy
+from quant_trading.portfolio.base import IPortfolioManager
+from quant_trading.broker.base import IBroker
+
+logger = logging.getLogger(__name__)
 
 
 class Engine:
@@ -25,6 +28,7 @@ class Engine:
         strategy: IStrategy,
         portfolio: IPortfolioManager,
         broker: IBroker,
+        timeframe: str = "1d",
     ):
         self._universe = universe
         self._data = data_handler
@@ -32,6 +36,7 @@ class Engine:
         self._strategy = strategy
         self._portfolio = portfolio
         self._broker = broker
+        self._timeframe = timeframe
 
     def run(
         self,
@@ -49,15 +54,20 @@ class Engine:
         end_time = end_time or datetime.now()
         start_time = start_time or end_time - timedelta(days=365)
 
+        logger.info("start=%s end=%s dry_run=%s", start_time.date(), end_time.date(), dry_run)
+
         # 1. Universe
         symbols = self._universe.get_symbols()
-        print(f"[Universe] {len(symbols)} symbols")
+        logger.info("[Universe] %d symbols: %s", len(symbols), symbols)
 
         # 2. Data
-        bars = self._data.get_bars(symbols, start_time, end_time)
-        print(f"[Data] fetched {len(bars)} symbols")
+        logger.info("[Data] fetching bars ...")
+        bars = self._data.get_bars(symbols, start_time, end_time, self._timeframe)
+        empty_symbols = [s for s, df in bars.items() if df.empty]
+        logger.info("[Data] fetched %d symbols, %d empty: %s", len(bars), len(empty_symbols), empty_symbols)
 
         # 3. Factor + Strategy (per symbol)
+        buy_signals, sell_signals = [], []
         signals = {}
         for symbol, df in bars.items():
             if df.empty:
@@ -72,70 +82,30 @@ class Engine:
             last = df.iloc[-1]
             if last.get("buy_signal", 0) == 1:
                 signals[symbol] = 1
+                buy_signals.append(symbol)
             elif last.get("sell_signal", 0) == 1:
                 signals[symbol] = -1
+                sell_signals.append(symbol)
 
-        print(f"[Strategy] signals: {signals}")
+        logger.info("[Strategy] buy=%s", buy_signals)
+        logger.info("[Strategy] sell=%s", sell_signals)
 
         if not signals or dry_run:
-            print(f"[Engine] {'dry run, skipping orders' if dry_run else 'no signals'}")
+            logger.info("[Engine] %s", "dry run, skipping orders" if dry_run else "no signals, done")
             return signals
 
         # 4. Portfolio
         positions = self._broker.get_positions()
-        account_value = self._broker.get_account_value()
-        orders = self._portfolio.generate_orders(signals, positions, account_value)
-        print(f"[Portfolio] {len(orders)} orders")
+        account = self._broker.get_account()
+        logger.info("[Portfolio] cash=%.2f, portfolio_value=%.2f, positions=%s", account.cash, account.portfolio_value, list(positions.keys()))
+        orders = self._portfolio.generate_orders(signals, positions, account)
+        logger.info("[Portfolio] %d orders: %s", len(orders), [(o.side.value, o.symbol, o.notional or o.qty) for o in orders])
 
         # 5. Broker
         fills = self._broker.submit_orders(orders)
         for fill in fills:
-            print(f"[Broker] {fill.side.value} {fill.symbol} qty={fill.qty} price={fill.price}")
+            logger.info("[Broker] %s %s qty=%.4f price=%.4f", fill.side.value, fill.symbol, fill.qty, fill.price)
 
+        logger.info("[Engine] done, %d fills", len(fills))
         return signals
 
-
-if __name__ == "__main__":
-    import os
-    from algo_trading.universe.static import StaticUniverse
-    from algo_trading.data.alpaca import AlpacaBarDataHandler
-    from algo_trading.factor.cci import CCI
-    from algo_trading.strategy.base import IStrategy
-    from algo_trading.portfolio.simple import SimplePortfolioManager
-    from algo_trading.broker.alpaca import AlpacaBroker
-
-    # 中概股 (匹配 archive/strategies/polygon_ticker_fetcher.py)
-    CHINESE_STOCKS = sorted(set([
-        'BABA', 'JD', 'PDD', 'NIO', 'XPEV', 'LI', 'BILI', 'BIDU', 'NTES', 'TME',
-        'EDU', 'TAL', 'HTHT', 'GDS', 'IQ', 'KC', 'ATHM', 'HUYA', 'VIPS', 'ZH',
-        'DADA', 'BGNE', 'ZLAB', 'YUMC', 'MNSO', 'API', 'TIGR', 'FUTU', 'UP',
-        'QFIN', 'LU', 'BEKE', 'TCOM', 'ZTO', 'BZUN', 'WB', 'MOMO', 'YY', 'SOHU',
-        'NOAH', 'LX', 'FINV', 'GOTU', 'HOLI', 'NIU', 'TUYA', 'WBAI', 'JKS',
-        'DQ', 'CSIQ', 'RENN', 'LEJU', 'EH', 'CANG', 'UXIN', 'KNDI', 'CAAS',
-        'XNET', 'SOGO', 'WIMI', 'YRD', 'XYF', 'HUIZ', 'QTT', 'CCNC', 'CMCM',
-        'LIZI', 'TOUR', 'CTK', 'NCTY', 'ZJYL', 'AMBO', 'REDU', 'COE', 'ONE',
-        'DLNG', 'FENG', 'GLG', 'GRCL', 'JZ', 'TEDU', 'LKCO', 'AIHS', 'DTSS',
-        'XIN', 'SINO', 'QH', 'SEED', 'WAFU', 'WEI', 'CNTF', 'JRJC', 'BEDU',
-        'MOHO', 'RYB', 'SFUN', 'YIN', 'CNET', 'CCM', 'CLPS', 'DOGZ', 'HGSH',
-        'HLG', 'HX', 'OGEN', 'QSG', 'RLYB', 'SG', 'TC', 'UTME', 'ZCMD',
-        'PETZ', 'PHCF', 'RAAS', 'RCON', 'SDH', 'SNDA', 'SXTC', 'THTI', 'UCAR',
-        'XRS', 'YI', 'YJ', 'ZKIN', 'LUNG',
-    ]))
-
-    engine = Engine(
-        universe=StaticUniverse(CHINESE_STOCKS),
-        data_handler=AlpacaBarDataHandler(),
-        factors=[
-            CCI(14),
-        ],
-        strategy=MultiPeriodResonance(),
-        portfolio=SimplePortfolioManager(),
-        broker=AlpacaBroker(),
-    )
-    # 5 年数据确保多周期指标有足够 warmup
-    # DRY_RUN 环境变量控制是否实盘下单，默认 dry run
-    dry_run = os.getenv("DRY_RUN", "true").lower() != "false"
-    engine.run(
-        start_time=datetime(2020, 1, 1),
-        dry_run=dry_run,
-    )

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict
 
-from algo_trading.common.datatypes import Order, Position
+from quant_trading.common.datatypes import Order, Position, Account
 
 
 class IPortfolioManager(ABC):
@@ -15,14 +15,14 @@ class IPortfolioManager(ABC):
         self,
         signals: Dict[str, int],
         positions: Dict[str, Position],
-        account_value: float,
+        account: Account,
     ) -> List[Order]:
         """根据信号生成订单
 
         Args:
             signals: {symbol: signal} 1=买入, -1=卖出, 0=无操作
             positions: 当前持仓
-            account_value: 账户总价值
+            account: 账户信息
 
         Returns:
             订单列表
