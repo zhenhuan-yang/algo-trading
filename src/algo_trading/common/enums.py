@@ -9,6 +9,14 @@ class Side(str, Enum):
 class OrderType(str, Enum):
     MARKET = "market"
     LIMIT = "limit"
+    STOP = "stop"
+    STOP_LIMIT = "stop_limit"
+    TRAILING_STOP = "trailing_stop"
+
+
+class TimeInForce(str, Enum):
+    DAY = "day"
+    GTC = "gtc"
 
 
 class OrderStatus(str, Enum):
