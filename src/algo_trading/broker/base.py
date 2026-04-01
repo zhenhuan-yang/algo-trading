@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict
 
-from quant_trading.common.datatypes import Order, Fill, Position, Account
+from algo_trading.common.datatypes import Order, Fill, Position, Account
 
 
 class IBroker(ABC):

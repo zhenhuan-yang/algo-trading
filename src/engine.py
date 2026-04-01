@@ -4,12 +4,12 @@ from typing import List, Optional
 
 import pandas as pd
 
-from quant_trading.universe.base import IUniverse
-from quant_trading.data.base import IBarDataHandler
-from quant_trading.factor.base import IFactor
-from quant_trading.strategy.base import IStrategy
-from quant_trading.portfolio.base import IPortfolioManager
-from quant_trading.broker.base import IBroker
+from algo_trading.universe.base import IUniverse
+from algo_trading.data.base import IBarDataHandler
+from algo_trading.factor.base import IFactor
+from algo_trading.strategy.base import IStrategy
+from algo_trading.portfolio.base import IPortfolioManager
+from algo_trading.broker.base import IBroker
 
 logger = logging.getLogger(__name__)
 

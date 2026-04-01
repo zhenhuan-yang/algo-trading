@@ -1,6 +1,6 @@
 import pandas as pd
 
-from quant_trading.strategy.base import IStrategy
+from algo_trading.strategy.base import IStrategy
 
 
 class RSIDivergenceStrategy(IStrategy):

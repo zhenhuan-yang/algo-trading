@@ -1,8 +1,8 @@
 from typing import List, Dict
 
-from quant_trading.common.datatypes import Order, Position, Account
-from quant_trading.common.enums import Side
-from quant_trading.portfolio.base import IPortfolioManager
+from algo_trading.common.datatypes import Order, Position, Account
+from algo_trading.common.enums import Side
+from algo_trading.portfolio.base import IPortfolioManager
 
 
 class SimplePortfolioManager(IPortfolioManager):

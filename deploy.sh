@@ -1,34 +1,21 @@
 #!/bin/bash
+set -euo pipefail
 
-# === Load Environment Variables from .env File ===
-if [ -f .env ]; then
-    export $(grep -v '^#' .env | xargs)
-fi
-
-# === Configuration ===
+AWS_PROFILE="algo-trading"
 AWS_REGION="us-west-2"
-AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID:?AWS_ACCOUNT_ID is required}"  # Load from .env
-REPO_NAME="trading"
-LAMBDA_FUNCTION_NAME="tradingview-alpaca"
-
-# Get the ECR URL
+AWS_ACCOUNT_ID="767828760457"
+REPO_NAME="algo-trading"
 ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME"
 
-# === Step 1: Authenticate with AWS ECR ===
-echo "🔑 Logging into AWS ECR..."
-aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URL
-
-# === Step 2: Build the Docker Image ===
-echo "🐳 Building the Docker image..."
+echo ">>> 构建镜像..."
 docker build -t $REPO_NAME .
 
-# === Step 3: Tag and Push the Image to AWS ECR ===
-echo "🏷️ Tagging and pushing the Docker image to AWS ECR..."
+echo ">>> 登录 ECR..."
+aws ecr get-login-password --region $AWS_REGION --profile $AWS_PROFILE | \
+    docker login --username AWS --password-stdin $ECR_URL
+
+echo ">>> 推送镜像..."
 docker tag $REPO_NAME:latest $ECR_URL:latest
 docker push $ECR_URL:latest
 
-# === Step 4: Deploy to AWS Lambda ===
-echo "🚀 Deploying new image to AWS Lambda..."
-aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --image-uri $ECR_URL:latest
-
-echo "✅ Deployment complete!"
+echo ">>> 完成: $ECR_URL:latest"

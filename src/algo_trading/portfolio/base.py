@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict
 
-from quant_trading.common.datatypes import Order, Position, Account
+from algo_trading.common.datatypes import Order, Position, Account
 
 
 class IPortfolioManager(ABC):

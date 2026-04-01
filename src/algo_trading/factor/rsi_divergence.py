@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from quant_trading.factor.base import IFactor
+from algo_trading.factor.base import IFactor
 
 
 class RSIDivergence(IFactor):

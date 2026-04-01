@@ -40,12 +40,12 @@ class AlpacaBarDataHandler(IBarDataHandler):
             secret_key: Alpaca Secret Key，默认从环境变量 ALPACA_SECRET_KEY 读取
             feed: 数据源 ("iex" 免费, "sip" 付费全市场)
         """
-        self._api_key = api_key or os.getenv("ALPACA_LIVE_API_KEY")
-        self._secret_key = secret_key or os.getenv("ALPACA_LIVE_SECRET_KEY")
+        self._api_key = api_key or os.getenv("ALPACA_API_KEY")
+        self._secret_key = secret_key or os.getenv("ALPACA_SECRET_KEY")
         if not self._api_key or not self._secret_key:
             raise ValueError(
                 "需要提供 api_key/secret_key 或设置环境变量 "
-                "ALPACA_LIVE_API_KEY / ALPACA_LIVE_SECRET_KEY"
+                "ALPACA_API_KEY / ALPACA_SECRET_KEY"
             )
         self._feed = feed
         self._client = StockHistoricalDataClient(self._api_key, self._secret_key)
