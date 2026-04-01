@@ -8,7 +8,7 @@ REPO_NAME="algo-trading"
 ECR_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME"
 
 echo ">>> 构建镜像..."
-docker build -t $REPO_NAME .
+docker build --platform linux/amd64 -t $REPO_NAME .
 
 echo ">>> 登录 ECR..."
 aws ecr get-login-password --region $AWS_REGION --profile $AWS_PROFILE | \
