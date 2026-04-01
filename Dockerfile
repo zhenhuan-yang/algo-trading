@@ -6,8 +6,9 @@ WORKDIR /app
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 # 先装依赖（利用 Docker 层缓存，代码改动不会重装包）
+# --no-install-project：跳过安装项目本身，src/ 通过 PYTHONPATH 直接访问
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev --no-install-project
 
 # 复制源码
 COPY src/ ./src/
