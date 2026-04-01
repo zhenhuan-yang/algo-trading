@@ -21,12 +21,12 @@ class AlpacaUniverse(IUniverse):
         secret_key: Optional[str] = None,
         paper: bool = True,
     ):
-        self._api_key = api_key or os.getenv("ALPACA_PAPER_API_KEY")
-        self._secret_key = secret_key or os.getenv("ALPACA_PAPER_SECRET_KEY")
+        self._api_key = api_key or os.getenv("ALPACA_API_KEY")
+        self._secret_key = secret_key or os.getenv("ALPACA_SECRET_KEY")
         if not self._api_key or not self._secret_key:
             raise ValueError(
                 "需要提供 api_key/secret_key 或设置环境变量 "
-                "ALPACA_PAPER_API_KEY / ALPACA_PAPER_SECRET_KEY"
+                "ALPACA_API_KEY / ALPACA_SECRET_KEY"
             )
         self._client = TradingClient(self._api_key, self._secret_key, paper=paper)
 

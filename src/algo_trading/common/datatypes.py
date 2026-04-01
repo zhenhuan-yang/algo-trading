@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from quant_trading.common.enums import Side, OrderType, OrderStatus, TimeInForce
+from algo_trading.common.enums import Side, OrderType, OrderStatus, TimeInForce
 
 
 @dataclass

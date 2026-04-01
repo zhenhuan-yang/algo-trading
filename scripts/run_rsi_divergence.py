@@ -7,13 +7,13 @@ import logging
 import os
 from datetime import datetime, timedelta
 
-from quant_trading.universe.static import StaticUniverse
-from quant_trading.data.alpaca import AlpacaBarDataHandler
-from quant_trading.factor.rsi_divergence import RSIDivergence
-from quant_trading.strategy.rsi_divergence import RSIDivergenceStrategy
-from quant_trading.portfolio.simple import SimplePortfolioManager
-from quant_trading.broker.alpaca import AlpacaBroker
-from quant_trading.engine import Engine
+from algo_trading.universe.static import StaticUniverse
+from algo_trading.data.alpaca import AlpacaBarDataHandler
+from algo_trading.factor.rsi_divergence import RSIDivergence
+from algo_trading.strategy.rsi_divergence import RSIDivergenceStrategy
+from algo_trading.portfolio.simple import SimplePortfolioManager
+from algo_trading.broker.alpaca import AlpacaBroker
+from engine import Engine
 
 logging.basicConfig(
     level=logging.INFO,
