@@ -54,7 +54,14 @@ DRY_RUN=false uv run python scripts/run_rsi_divergence.py
 ### 云端架构
 
 ```
-EventBridge (rate 5 min) → ECS Fargate Task → ECR Image → CloudWatch Logs
+                          ┌───────────┐
+                          │ ECR Image │
+                          └─────┬─────┘
+                                │ pull
+┌─────────────┐  trigger  ┌─────▼─────┐  logs  ┌─────────────────┐
+│ EventBridge │──────────→│ ECS Task  │───────→│ CloudWatch Logs │
+│  (cron 5m)  │           │ (Fargate) │        │                 │
+└─────────────┘           └───────────┘        └─────────────────┘
 ```
 
 ### 推送镜像
@@ -68,28 +75,35 @@ EventBridge (rate 5 min) → ECS Fargate Task → ECR Image → CloudWatch Logs
 ### AWS 控制台手动配置（一次性）
 
 1. **ECR** — 创建仓库 `algo-trading`
-2. **ECS** — 创建集群 `algo-trading`，任务定义选 Fargate，image 填 ECR URL，设置环境变量：
+2. **ECS** — 创建集群 `algo-trading`，任务定义 `rsi-divergence` 选 Fargate，image 填 ECR URL，设置环境变量：
    ```
    ALPACA_API_KEY     = <your_key>
    ALPACA_SECRET_KEY  = <your_secret>
    DRY_RUN            = false
    ```
-3. **EventBridge** — 创建规则，schedule `rate(5 minutes)`，target 选 ECS cluster + 任务定义
-4. **CloudWatch** — 日志自动写入 `/ecs/algo-trading/rsi-divergence`
+3. **IAM** — `ecsTaskExecutionRole` 需要：
+   - Trust policy 信任 `ecs-tasks.amazonaws.com` 和 `events.amazonaws.com`
+   - 附加 `AmazonECSTaskExecutionRolePolicy`（拉镜像 + 写日志）
+   - Inline policy 包含 `ecs:RunTask` 和 `iam:PassRole`（供 EventBridge 调用）
+4. **EventBridge** — 创建规则，schedule `cron(0/5 13-20 ? * MON-FRI *)`（美股交易时段，UTC），target 选 ECS cluster + 任务定义，role 选 `ecsTaskExecutionRole`
+5. **CloudWatch** — 日志自动写入 `/ecs/rsi-divergence`
 
 ## Project Structure
 
 ```
-src/
-├── engine.py              # Pipeline 编排器
-└── algo_trading/
-    ├── common/            # enums, datatypes (Order, Fill, Position)
-    ├── data/              # IBarDataHandler, AlpacaBarDataHandler
-    ├── factor/            # IFactor, RSIDivergence, CCI
-    ├── strategy/          # IStrategy, RSIDivergenceStrategy
-    ├── universe/          # IUniverse, StaticUniverse, AlpacaUniverse
-    ├── portfolio/         # IPortfolioManager, SimplePortfolioManager
-    └── broker/            # IBroker, AlpacaBroker
-scripts/
-└── run_rsi_divergence.py  # 策略入口
+├── Dockerfile             # 容器镜像（python:3.11-slim + uv）
+├── deploy.sh              # 构建 & 推送 ECR 镜像
+├── pyproject.toml         # 项目依赖
+├── scripts/
+│   └── run_rsi_divergence.py  # 策略入口
+└── src/
+    ├── engine.py              # Pipeline 编排器
+    └── algo_trading/
+        ├── common/            # enums, datatypes (Order, Fill, Position)
+        ├── data/              # IBarDataHandler, AlpacaBarDataHandler
+        ├── factor/            # IFactor, RSIDivergence, CCI
+        ├── strategy/          # IStrategy, RSIDivergenceStrategy
+        ├── universe/          # IUniverse, StaticUniverse, AlpacaUniverse
+        ├── portfolio/         # IPortfolioManager, SimplePortfolioManager
+        └── broker/            # IBroker, AlpacaBroker
 ```
