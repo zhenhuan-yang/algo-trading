@@ -80,6 +80,9 @@ DRY_RUN=false uv run python scripts/run_rsi_divergence.py
    ALPACA_API_KEY     = <your_key>
    ALPACA_SECRET_KEY  = <your_secret>
    DRY_RUN            = false
+   SMTP_USER          = <your_gmail>
+   SMTP_PASSWORD      = <gmail_app_password>
+   EMAIL_TO           = <recipient_email>
    ```
 3. **IAM** — `ecsTaskExecutionRole` 需要：
    - Trust policy 信任 `ecs-tasks.amazonaws.com` 和 `events.amazonaws.com`
