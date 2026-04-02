@@ -21,7 +21,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%dT%H:%M:%S",
 )
 
-SYMBOLS = ["VOO", "TQQQ"]
+SYMBOLS = ["VOO", "TQQQ", "ORCL"]
 
 engine = Engine(
     universe=StaticUniverse(SYMBOLS),
