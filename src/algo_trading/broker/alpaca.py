@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import List, Dict, Optional
 from datetime import datetime
@@ -11,6 +12,9 @@ from alpaca.trading.requests import MarketOrderRequest
 from algo_trading.broker.base import IBroker
 from algo_trading.common.datatypes import Order, Fill, Position, Account
 from algo_trading.common.enums import Side
+from utils.email import send_email
+
+logger = logging.getLogger(__name__)
 
 
 class AlpacaBroker(IBroker):
@@ -52,6 +56,18 @@ class AlpacaBroker(IBroker):
                 price=float(result.filled_avg_price or 0),
                 timestamp=result.filled_at or datetime.now(),
             ))
+
+        if fills:
+            lines = [
+                f"  {f.side.value.upper()} {f.symbol}  "
+                f"qty={f.qty}  price=${f.price:.2f}  "
+                f"notional=${f.notional:.2f}"
+                for f in fills
+            ]
+            send_email(
+                subject=f"[Algo Trading] {len(fills)} fill(s) executed",
+                body=f"成交时间: {datetime.now():%Y-%m-%d %H:%M:%S}\n\n" + "\n".join(lines),
+            )
 
         return fills
 
