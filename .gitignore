@@ -56,5 +56,8 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
+# Data
+data/
+
 # AI
 .claude/
