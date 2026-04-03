@@ -80,14 +80,17 @@ class AlpacaBarDataHandler(IBarDataHandler):
         for symbol in symbols:
             if symbol in raw_df.index.get_level_values(0):
                 df = raw_df.loc[symbol].copy()
-                df = df.reset_index()
-                df = df.rename(columns={
-                    "trade_count": "trades",
-                })
+                df = df.rename(columns={"trade_count": "trades"})
+                # 统一 DatetimeIndex: UTC、命名、排序、去重
+                df.index = df.index.tz_convert("UTC")
+                df.index.name = "timestamp"
+                df = df.sort_index()
+                df = df[~df.index.duplicated(keep="last")]
                 result[symbol] = df
             else:
                 result[symbol] = pd.DataFrame(
-                    columns=["open", "high", "low", "close", "volume", "vwap", "trades"]
+                    columns=["open", "high", "low", "close", "volume", "vwap", "trades"],
+                    index=pd.DatetimeIndex([], name="timestamp", tz="UTC"),
                 )
 
         return result
