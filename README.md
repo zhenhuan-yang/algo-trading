@@ -11,7 +11,7 @@ Universe → Data → Factor → Strategy → Portfolio → Broker
 | 层 | 职责 | 实现 |
 |---|------|------|
 | **Universe** | 标的池 | `StaticUniverse`, `AlpacaUniverse` |
-| **Data** | K线数据 | `AlpacaBarDataHandler` |
+| **Data** | K线数据 (DatetimeIndex, UTC) | `AlpacaBarDataHandler` |
 | **Factor** | 因子计算 (纯 transform) | `RSIDivergence`, `CCI` |
 | **Strategy** | 信号条件 (stateless，不跟踪 position) | `RSIDivergenceStrategy` |
 | **Portfolio** | 订单生成 (position-aware) | `SimplePortfolioManager` |
@@ -24,6 +24,21 @@ Universe → Data → Factor → Strategy → Portfolio → Broker
 - **Strategy = Model**: 输出 raw conditions，不跟踪持仓状态
 - **Portfolio = Position gate**: 结合 broker 真实持仓过滤信号，防止重复买卖
 - **Engine**: 完全通用，不感知具体策略逻辑
+
+### DataFrame 规范
+
+Data 层返回的 `Dict[str, pd.DataFrame]` 遵循以下格式：
+
+```
+                           open    high    low     close   volume   vwap    trades
+timestamp (DatetimeIndex, UTC, tz-aware)
+2026-03-01 13:30:00+00:00  420.5   421.3   420.1   421.0   1234     420.8   56
+2026-03-01 13:35:00+00:00  421.0   422.0   420.8   421.8   2345     421.5   78
+```
+
+- **Index**: `DatetimeIndex`，UTC 时区，单调递增，无重复
+- **列名**: 全小写 (`open`, `high`, `low`, `close`, `volume`, `vwap`, `trades`)
+- Factor / Strategy 通过 `.values` 提取 numpy 数组计算，与 index 类型无关
 
 ## Setup
 
@@ -48,6 +63,17 @@ dry run 默认开启（不实际下单），实盘：
 ```sh
 DRY_RUN=false uv run python scripts/run_rsi_divergence.py
 ```
+
+## Backtest
+
+```sh
+uv run python backtest/rsi_divergence.py
+```
+
+产物输出到 `data/backtest/`：
+- `report.html` — quantstats 完整报告
+- `trades.csv` — 逐笔交易记录
+- `stats_by_symbol.csv` — 按标的统计 (Sharpe, Sortino, MaxDD 等)
 
 ## Deploy (AWS ECS + EventBridge)
 
@@ -98,7 +124,9 @@ DRY_RUN=false uv run python scripts/run_rsi_divergence.py
 ├── deploy.sh              # 构建 & 推送 ECR 镜像
 ├── pyproject.toml         # 项目依赖
 ├── scripts/
-│   └── run_rsi_divergence.py  # 策略入口
+│   └── run_rsi_divergence.py  # 策略入口（实盘 / dry run）
+├── backtest/
+│   └── rsi_divergence.py      # 回测脚本（vectorbt + quantstats）
 └── src/
     └── algo_trading/
         ├── engine.py          # Pipeline 编排器
