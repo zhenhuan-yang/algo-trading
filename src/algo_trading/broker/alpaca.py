@@ -12,7 +12,7 @@ from alpaca.trading.requests import MarketOrderRequest
 from algo_trading.broker.base import IBroker
 from algo_trading.common.datatypes import Order, Fill, Position, Account
 from algo_trading.common.enums import Side
-from utils.email import send_email
+from algo_trading.utils.email import send_email
 
 logger = logging.getLogger(__name__)
 

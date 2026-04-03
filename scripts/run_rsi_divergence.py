@@ -13,7 +13,7 @@ from algo_trading.factor.rsi_divergence import RSIDivergence
 from algo_trading.strategy.rsi_divergence import RSIDivergenceStrategy
 from algo_trading.portfolio.simple import SimplePortfolioManager
 from algo_trading.broker.alpaca import AlpacaBroker
-from engine import Engine
+from algo_trading.engine import Engine
 
 logging.basicConfig(
     level=logging.INFO,

@@ -14,7 +14,7 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY src/ ./src/
 COPY scripts/ ./scripts/
 
-# algo_trading 包 + engine 模块都在 src/ 下
+# algo_trading 包在 src/ 下
 ENV PYTHONPATH=/app/src
 
 CMD ["uv", "run", "python", "scripts/run_rsi_divergence.py"]

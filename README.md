@@ -100,13 +100,14 @@ DRY_RUN=false uv run python scripts/run_rsi_divergence.py
 ├── scripts/
 │   └── run_rsi_divergence.py  # 策略入口
 └── src/
-    ├── engine.py              # Pipeline 编排器
     └── algo_trading/
+        ├── engine.py          # Pipeline 编排器
         ├── common/            # enums, datatypes (Order, Fill, Position)
         ├── data/              # IBarDataHandler, AlpacaBarDataHandler
         ├── factor/            # IFactor, RSIDivergence, CCI
         ├── strategy/          # IStrategy, RSIDivergenceStrategy
         ├── universe/          # IUniverse, StaticUniverse, AlpacaUniverse
         ├── portfolio/         # IPortfolioManager, SimplePortfolioManager
-        └── broker/            # IBroker, AlpacaBroker
+        ├── broker/            # IBroker, AlpacaBroker
+        └── utils/             # email 通知等工具函数
 ```
