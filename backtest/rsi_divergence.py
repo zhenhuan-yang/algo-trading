@@ -47,10 +47,9 @@ for symbol, df in bars.items():
         continue
     df = factor.compute(df)
     df = strategy.generate_signals(df)
-    ts = df["timestamp"]
-    closes[symbol] = pd.Series(df["close"].values, index=ts)
-    entries[symbol] = pd.Series((df["buy_signal"] == 1).values, index=ts)
-    exits[symbol] = pd.Series((df["sell_signal"] == 1).values, index=ts)
+    closes[symbol] = df["close"]
+    entries[symbol] = df["buy_signal"] == 1
+    exits[symbol] = df["sell_signal"] == 1
 
 close_df = pd.DataFrame(closes)
 entries_df = pd.DataFrame(entries).fillna(False).astype(bool)
