@@ -19,6 +19,9 @@ dependencies = [
     "python-dotenv>=1.0.0",
 ]
 
+[project.optional-dependencies]
+backtest = ["vectorbt>=0.26.0", "quantstats>=0.0.62"]
+
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
