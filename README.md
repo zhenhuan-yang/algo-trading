@@ -75,6 +75,14 @@ uv run python backtest/rsi_divergence.py
 - `trades.csv` — 逐笔交易记录
 - `stats_by_symbol.csv` — 按标的统计 (Sharpe, Sortino, MaxDD 等)
 
+## Test
+
+```sh
+uv run pytest
+```
+
+单元测试覆盖 Factor、Strategy、Portfolio 三层，目录结构对应 `src/algo_trading/`。
+
 ## Deploy (AWS ECS + EventBridge)
 
 ### 云端架构
@@ -127,6 +135,11 @@ uv run python backtest/rsi_divergence.py
 │   └── run_rsi_divergence.py  # 策略入口（实盘 / dry run）
 ├── backtest/
 │   └── rsi_divergence.py      # 回测脚本（vectorbt + quantstats）
+├── tests/                     # 单元测试 (pytest)
+│   ├── conftest.py            # 共享 OHLCV fixtures
+│   ├── factor/                # Factor 层测试
+│   ├── strategy/              # Strategy 层测试
+│   └── portfolio/             # Portfolio 层测试
 └── src/
     └── algo_trading/
         ├── engine.py          # Pipeline 编排器
