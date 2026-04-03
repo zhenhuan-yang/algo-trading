@@ -66,7 +66,10 @@ DRY_RUN=false uv run python scripts/run_rsi_divergence.py
 
 ## Backtest
 
+回测依赖 `vectorbt` 和 `quantstats`，需单独安装：
+
 ```sh
+uv sync --extra backtest
 uv run python backtest/rsi_divergence.py
 ```
 
