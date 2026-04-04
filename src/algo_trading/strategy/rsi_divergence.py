@@ -93,9 +93,12 @@ class RSIDivergenceStrategy(IStrategy):
                     in_position = False
             else:
                 # ATR/PERC 模式: 只看 trailing stop
+                # Pine Script 用 crossunder(close, trailing_sl):
+                # close[1] >= trailing_sl[1] and close < trailing_sl
+                prev_trailing_sl = trailing_sl
                 new_sl = low[i] - self._compute_sl_val(close[i], atr[i])
                 trailing_sl = max(trailing_sl, new_sl)
-                if close[i] < trailing_sl:
+                if close[i - 1] >= prev_trailing_sl and close[i] < trailing_sl:
                     sell_signal[i] = 1
                     in_position = False
                     trailing_sl = 0.0

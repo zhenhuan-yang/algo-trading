@@ -85,7 +85,9 @@ class RSIDivergence(IFactor):
                 center = i - lbR
                 if prev_pl_idx >= 0:
                     prev_center = prev_pl_idx - lbR
-                    bars_since = i - prev_pl_idx
+                    # Pine Script 的 _inRange(plFound[1]) 用 barssince(plFound[1])，
+                    # 等效距离比 i - prev_pl_idx 少 1
+                    bars_since = i - prev_pl_idx - 1
                     if self._range_lower <= bars_since <= self._range_upper:
                         # Regular Bullish: 价格 Lower Low + RSI Higher Low
                         if low[center] < low[prev_center] and rsi[center] > rsi[prev_center]:
@@ -102,7 +104,7 @@ class RSIDivergence(IFactor):
                 center = i - lbR
                 if prev_ph_idx >= 0:
                     prev_center = prev_ph_idx - lbR
-                    bars_since = i - prev_ph_idx
+                    bars_since = i - prev_ph_idx - 1
                     if self._range_lower <= bars_since <= self._range_upper:
                         # Regular Bearish: 价格 Higher High + RSI Lower High
                         if high[center] > high[prev_center] and rsi[center] < rsi[prev_center]:
@@ -147,4 +149,4 @@ class RSIDivergence(IFactor):
             (low - prev_close).abs(),
         ], axis=1).max(axis=1)
 
-        return tr.ewm(span=length, min_periods=length, adjust=False).mean()
+        return tr.ewm(alpha=1 / length, min_periods=length, adjust=False).mean()
